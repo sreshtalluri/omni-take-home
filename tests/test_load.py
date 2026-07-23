@@ -1,5 +1,6 @@
 import duckdb
-from etl.load import load_release
+import pytest
+from etl.load import load_release, LoadError
 
 def _slices(tmp_path):
     e = tmp_path / "edges.tsv";   e.write_text("7\tomni.co\n8\thex.tech\n")
@@ -18,3 +19,47 @@ def test_load_and_idempotent_rerun(tmp_path):
                      where source_id = 7""").fetchone()
     assert row == ("dev.friendly", "omni.co")
     assert con.sql("select nodes_total from raw_graph_stats").fetchone()[0] == 1000
+
+def test_load_rolls_back_on_failure(tmp_path):
+    db = tmp_path / "t.duckdb"
+    good_slices = _slices(tmp_path)
+    load_release(db, "2026-05", good_slices, nodes_total=1000)
+
+    # Same release, but the ranks slice path doesn't exist -- the ranks
+    # insert should blow up mid-transaction, after the delete-then-insert
+    # loop has already deleted this release's rows from all three tables.
+    bad_slices = dict(good_slices, ranks=tmp_path / "missing-ranks.tsv")
+    with pytest.raises(Exception):
+        load_release(db, "2026-05", bad_slices, nodes_total=9999)
+
+    con = duckdb.connect(str(db))
+    assert con.sql(
+        "select count(*) from raw_backlink_edges where release = '2026-05'"
+    ).fetchone()[0] == 2
+    assert con.sql(
+        "select count(*) from raw_domain_ranks where release = '2026-05'"
+    ).fetchone()[0] == 1
+    # nodes_total is still the original value: the failed rerun's delete
+    # and its would-be 9999 never survived the rollback.
+    assert con.sql(
+        "select nodes_total from raw_graph_stats where release = '2026-05'"
+    ).fetchone()[0] == 1000
+
+def test_load_fails_on_unresolved_source_id(tmp_path):
+    db = tmp_path / "t.duckdb"
+    e = tmp_path / "edges.tsv"
+    e.write_text("7\tomni.co\n8\thex.tech\n9\tacme.io\n")
+    s = tmp_path / "sources.tsv"
+    s.write_text("7\tdev.friendly\n8\tnet.one-link\n")  # source_id 9 missing
+    r = tmp_path / "ranks.tsv"
+    r.write_text("dev.friendly\t100\t200\n")
+    slices = {"edges": e, "sources": s, "ranks": r}
+
+    with pytest.raises(LoadError):
+        load_release(db, "2026-06", slices, nodes_total=500)
+
+    con = duckdb.connect(str(db))
+    for t in ("raw_backlink_edges", "raw_domain_ranks", "raw_graph_stats"):
+        assert con.sql(
+            f"select count(*) from {t} where release = '2026-06'"
+        ).fetchone()[0] == 0
