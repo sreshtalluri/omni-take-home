@@ -1,0 +1,17 @@
+version: 2
+sources:
+  - name: raw
+    schema: main
+    tables:
+      - name: raw_backlink_edges
+        columns:
+          - name: release
+            tests: [not_null]
+          - name: target_domain
+            tests:
+              - not_null
+              - accepted_values:
+                  arguments:
+                    values: [omni.co, sigmacomputing.com, hex.tech, mode.com, lightdash.com]
+      - name: raw_domain_ranks
+      - name: raw_graph_stats

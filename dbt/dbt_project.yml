@@ -1,0 +1,34 @@
+name: backlinks
+version: "0.1.0"
+profile: backlinks
+model-paths: ["models"]
+seed-paths: ["seeds"]
+
+# Mirror etl/config.yaml's score_weights (0.5/0.3/0.2) and
+# min_competitor_count (2) -- keep these two files in sync if either
+# changes.
+vars:
+  weight_gap_breadth: 0.5
+  weight_authority: 0.3
+  weight_persistence: 0.2
+  min_competitor_count: 2
+
+models:
+  backlinks:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table
+
+seeds:
+  backlinks:
+    category_overrides:
+      # category_overrides.csv is header-only until Task 9's manual curation
+      # pass. With zero data rows dbt has nothing to infer column types
+      # from, so pin them explicitly -- otherwise `dbt seed`/`dbt build`
+      # errors on the empty file instead of loading an empty table.
+      +column_types:
+        source_domain: varchar
+        category: varchar

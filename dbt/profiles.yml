@@ -1,0 +1,13 @@
+# profiles.yml -- checked in; local file db, no credentials.
+#
+# DUCKDB_PATH is an optional override for `path`, used only for
+# throwaway/CI-style validation builds against a fixture-loaded DuckDB file
+# (see .superpowers/sdd/task-7-report.md). Left unset, `path` resolves to
+# the project's real DuckDB file, unchanged from the brief.
+backlinks:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', '../data/backlinks.duckdb') }}"
+      threads: 4

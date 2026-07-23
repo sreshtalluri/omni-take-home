@@ -1,0 +1,20 @@
+version: 2
+models:
+  - name: mart_backlink_opportunities
+    columns:
+      - name: source_domain
+        tests: [not_null, unique]
+      - name: links_omni
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0]
+      - name: opportunity_score
+        tests: [not_null]
+      - name: competitor_count
+        description: >
+          Range-checked (2-4) by the singular test
+          tests/assert_competitor_count_in_range.sql rather than a
+          dbt_utils.accepted_range schema test, per controller
+          clarification -- avoids adding the dbt_utils package for one
+          range check.
