@@ -1,0 +1,42 @@
+# Which competitor set we track. Values are registrable domains as they
+# appear (reversed) in the CC domain graph vertices file.
+targets:
+  omni: omni.co
+  sigma: sigmacomputing.com
+  hex: hex.tech
+  mode: mode.com
+  lightdash: lightdash.com
+
+# Web graph releases mapped to the assignment's "May 2026 / June 2026".
+# Each release is a 3-crawl merge; we take the release whose LATEST crawl
+# is the required month. Documented as a tradeoff in SPEC.md.
+releases:
+  - id: cc-main-2026-mar-apr-may
+    label: "2026-05"
+    crawls: [CC-MAIN-2026-12, CC-MAIN-2026-17, CC-MAIN-2026-21]
+  - id: cc-main-2026-apr-may-jun
+    label: "2026-06"
+    crawls: [CC-MAIN-2026-17, CC-MAIN-2026-21, CC-MAIN-2026-25]
+
+base_url: https://data.commoncrawl.org/projects/hyperlinkgraph
+
+http:
+  max_attempts: 5
+  timeout_s: 60
+  backoff_base_s: 2.0
+
+data_dir: data
+duckdb_path: data/backlinks.duckdb
+
+# 1-based column indices in the CC text files. Verified by peeking at the
+# real files before the first full run (run.py refuses to run without them).
+columns:
+  vertices: {id: 1, rev_domain: 2}
+  edges: {src: 1, dst: 2}
+  ranks: {hc_pos: 1, pr_pos: 3, rev_domain: 5}
+
+score_weights:
+  gap_breadth: 0.5      # competitor_count / 4
+  authority: 0.3        # harmonic centrality percentile
+  persistence: 0.2      # present in both releases
+min_competitor_count: 2
