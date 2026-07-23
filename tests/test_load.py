@@ -45,6 +45,33 @@ def test_load_rolls_back_on_failure(tmp_path):
         "select nodes_total from raw_graph_stats where release = '2026-05'"
     ).fetchone()[0] == 1000
 
+def test_load_empty_slices(tmp_path):
+    db = tmp_path / "t.duckdb"
+    e = tmp_path / "edges.tsv";   e.write_text("")
+    s = tmp_path / "sources.tsv"; s.write_text("")
+    r = tmp_path / "ranks.tsv";   r.write_text("")
+    slices = {"edges": e, "sources": s, "ranks": r}
+    assert e.stat().st_size == 0
+    assert s.stat().st_size == 0
+    assert r.stat().st_size == 0
+
+    counts = load_release(db, "2026-07", slices, nodes_total=0)
+    assert counts == {
+        "raw_backlink_edges": 0,
+        "raw_domain_ranks": 0,
+        "raw_graph_stats": 1,
+    }
+
+    # rerun stays idempotent: same 0-byte slices, same counts, no duplicate
+    # stats row.
+    counts2 = load_release(db, "2026-07", slices, nodes_total=0)
+    assert counts2 == counts
+
+    con = duckdb.connect(str(db))
+    assert con.sql(
+        "select count(*) from raw_graph_stats where release = '2026-07'"
+    ).fetchone()[0] == 1
+
 def test_load_fails_on_unresolved_source_id(tmp_path):
     db = tmp_path / "t.duckdb"
     e = tmp_path / "edges.tsv"

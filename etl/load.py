@@ -19,7 +19,19 @@ create table if not exists raw_graph_stats (
 # real join-based insert below and the anti-join validation, so the
 # validation can never read the sources file differently than the insert
 # that follows it.
-_ID_DOMAIN_CSV = ("read_csv(?, delim='\t', header=false, "
+#
+# auto_detect=false (with explicit columns) is required, not cosmetic: with
+# auto_detect on (the default), DuckDB's dialect sniffer needs at least one
+# row to sniff a delimiter from and raises InvalidInputException on a
+# genuinely empty (0-byte) file -- even though `columns` already fully
+# specifies the schema. A verified-empty slice (a tracked target with zero
+# backlinks that release) is valid data -- 0 rows -- not the corrupt/partial
+# data the all-or-nothing policy exists to catch, so it must load cleanly.
+# Verified empirically against the installed DuckDB version (1.5.5): with
+# auto_detect=false, read_csv on a 0-byte file returns an empty result set
+# instead of raising, and behaves identically to the non-empty case for
+# every downstream join/anti-join/insert in this module.
+_ID_DOMAIN_CSV = ("read_csv(?, delim='\t', header=false, auto_detect=false, "
                    "columns={'column0':'bigint','column1':'varchar'})")
 
 _UNRESOLVED_EDGES_SQL = f"""
@@ -75,7 +87,7 @@ def load_release(db_path, release_label, slices, nodes_total) -> dict:
             con.execute("""
                 insert into raw_domain_ranks
                 select ?, column0, column1, column2
-                from read_csv(?, delim='\t', header=false,
+                from read_csv(?, delim='\t', header=false, auto_detect=false,
                     columns={'column0':'varchar','column1':'bigint','column2':'bigint'})""",
                 [release_label, str(slices["ranks"])])
             con.execute("insert into raw_graph_stats values (?, ?)",
