@@ -16,6 +16,22 @@ def download(url: str, dest: Path, http: HttpCfg) -> Path:
     for attempt in range(http.max_attempts):
         try:
             offset = part.stat().st_size if part.exists() else 0
+            if offset:
+                # A .part may already be the complete file (crash/interrupt
+                # happened after the GET finished writing but before the
+                # rename, or before the HEAD used to verify it). Check
+                # before issuing another GET so we don't send
+                # Range: bytes=<full_size>- to a compliant server, which
+                # answers 416 and would otherwise retry forever with the
+                # same offset.
+                total = _remote_size(url, http)
+                if total is not None:
+                    if offset == total:
+                        part.rename(dest)
+                        return dest
+                    if offset > total:
+                        part.unlink()  # corrupt/stale partial larger than remote
+                        offset = 0
             headers = {"Range": f"bytes={offset}-"} if offset else {}
             with requests.get(url, headers=headers, stream=True,
                               timeout=http.timeout_s) as r:
@@ -34,7 +50,8 @@ def download(url: str, dest: Path, http: HttpCfg) -> Path:
             return dest
         except Exception as e:  # noqa: BLE001 — every failure funnels into retry
             last_err = e
-            time.sleep(http.backoff_base_s * (2 ** attempt) + random.uniform(0, 1))
+            if attempt < http.max_attempts - 1:
+                time.sleep(http.backoff_base_s * (2 ** attempt) + random.uniform(0, 1))
     raise DownloadError(f"{url} failed after {http.max_attempts} attempts: {last_err}")
 
 def _remote_size(url: str, http: HttpCfg):
