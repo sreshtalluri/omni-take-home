@@ -18,7 +18,7 @@ Common Crawl web graph releases (data.commoncrawl.org, HTTPS)
         |                                         ^
         |                                         | scripts/load_from_slices.py
         v  etl.load.load_release                  | (skips download+extract, same load call)
-  DuckDB raw tables (data/backlinks.duckdb) <------+
+  DuckDB raw tables (data/backlinks.duckdb) <-----+
     raw_backlink_edges, raw_domain_ranks, raw_graph_stats
         |
         v  dbt build
