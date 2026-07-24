@@ -8,26 +8,30 @@ Output is at most 25 referring domains, grouped by outreach category, that link 
 
 ## Architecture
 
+```mermaid
+flowchart TD
+    CC["Common Crawl web graph releases (HTTPS)<br/>cc-main-2026-mar-apr-may = release 2026-05<br/>cc-main-2026-apr-may-jun = release 2026-06"]
+    RUN["etl/run.py --release id<br/>download, extract, load<br/>(checkpointed per step)"]
+    SLICES["data/slices/release/*.tsv + graph.stats<br/>(committed, ~500KB)"]
+    QUICK["scripts/load_from_slices.py<br/>(skips download + extract)"]
+    LOAD["etl.load.load_release<br/>(idempotent, all-or-nothing per release)"]
+    DUCK[("DuckDB data/backlinks.duckdb<br/>raw_backlink_edges, raw_domain_ranks, raw_graph_stats")]
+    DBT["dbt build<br/>staging → intermediate → mart_backlink_opportunities"]
+    REPORT["report/top_25_opportunities.md<br/>(generate_report.py + category_overrides.csv + actions.csv)"]
+    OMNI["omni/*.view + *.topic.yaml<br/>(semantic model over the mart)"]
+
+    CC -->|"full run: make etl"| RUN
+    RUN --> SLICES
+    SLICES -->|"quick path: make load-slices"| QUICK
+    RUN --> LOAD
+    QUICK --> LOAD
+    LOAD --> DUCK
+    DUCK --> DBT
+    DBT --> REPORT
+    DBT --> OMNI
 ```
-Common Crawl web graph releases (data.commoncrawl.org, HTTPS)
-  cc-main-2026-mar-apr-may  -> release label "2026-05"
-  cc-main-2026-apr-may-jun  -> release label "2026-06"
-        |
-        v  etl/run.py --release <id>  (download -> extract -> load, checkpointed per step)
-  data/slices/<release>/*.tsv + graph.stats  (committed, ~500KB)
-        |                                         ^
-        |                                         | scripts/load_from_slices.py
-        v  etl.load.load_release                  | (skips download+extract, same load call)
-  DuckDB raw tables (data/backlinks.duckdb) <-----+
-    raw_backlink_edges, raw_domain_ranks, raw_graph_stats
-        |
-        v  dbt build
-  staging -> intermediate -> mart (mart_backlink_opportunities)
-        |
-        +--> report/top_25_opportunities.md  (scripts/generate_report.py,
-        |      reads dbt/seeds/category_overrides.csv + report/actions.csv too)
-        +--> omni/*.view + *.topic.yaml       (semantic model over the mart)
-```
+
+Both data paths converge on the same `etl.load.load_release` call -- the quick path loads the committed slices with the exact loader, idempotency, and failure semantics the full run uses.
 
 ## Reproduction
 
