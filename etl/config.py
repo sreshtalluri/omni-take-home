@@ -23,8 +23,6 @@ class Config:
     data_dir: str
     duckdb_path: str
     columns: dict
-    score_weights: dict
-    min_competitor_count: int
 
 def load_config(path="etl/config.yaml") -> Config:
     raw = yaml.safe_load(Path(path).read_text())
@@ -36,6 +34,4 @@ def load_config(path="etl/config.yaml") -> Config:
         data_dir=raw["data_dir"],
         duckdb_path=raw["duckdb_path"],
         columns=raw["columns"],
-        score_weights=raw["score_weights"],
-        min_competitor_count=raw["min_competitor_count"],
     )

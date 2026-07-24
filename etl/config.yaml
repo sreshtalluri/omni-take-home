@@ -35,8 +35,6 @@ columns:
   edges: {src: 1, dst: 2}
   ranks: {hc_pos: 1, pr_pos: 3, rev_domain: 5}
 
-score_weights:
-  gap_breadth: 0.5      # competitor_count / 4
-  authority: 0.3        # harmonic centrality percentile
-  persistence: 0.2      # present in both releases
-min_competitor_count: 2
+# Scoring weights and the min-competitor filter live in
+# dbt/dbt_project.yml vars, the single place they are consumed -- the ETL
+# layer deliberately carries no copy of them.

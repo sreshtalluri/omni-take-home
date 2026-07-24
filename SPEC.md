@@ -25,7 +25,7 @@ The schema and guarantees each layer of the pipeline exposes to the next, from r
 - `stg_domain_ranks(release, source_domain, hc_pos, nodes_total, authority_percentile)`
 
 ### Intermediate (`dbt/models/intermediate`)
-- `int_competitor_coverage(source_domain, links_omni, links_sigma, links_hex, links_mode, links_lightdash, releases_seen, present_in_both)`
+- `int_competitor_coverage(source_domain, links_omni, links_sigma, links_hex, links_mode, links_lightdash, releases_seen, present_in_both)` -- `present_in_both` compares `releases_seen` against the count of loaded releases (currently 2), not a hardcoded 2, so a third release generalizes it to "seen in every release" instead of silently inverting the flag
 - `int_domain_authority(source_domain, authority_percentile)` -- max percentile across releases
 
 ### Mart (`dbt/models/marts/mart_backlink_opportunities.sql`)
@@ -35,16 +35,16 @@ The schema and guarantees each layer of the pipeline exposes to the next, from r
 
 ### Score formula
 - `opportunity_score = 0.5*(competitor_count/4) + 0.3*authority_percentile + 0.2*present_in_both`
-- Weights live in two places, kept in sync by hand: `etl/config.yaml: score_weights` and `dbt/dbt_project.yml: vars`
-- `min_competitor_count = 2`
+- Weights and `min_competitor_count` (2) live only in `dbt/dbt_project.yml: vars` -- dbt is the only thing that computes the score, so the ETL layer carries no copy; `scripts/generate_report.py` reads the weights from that same file when re-scoring merged duplicate rows
 
 ### Freshness
 - One row set per web-graph release, not per calendar month
 - Keyed on release label (`2026-05` / `2026-06`); delete+insert per release; rerunning a release is idempotent
+- Assumed cadence: run once per new web-graph release -- roughly monthly, when Common Crawl publishes one -- by any scheduler invoking `etl/run.py --all` after appending the release to `etl/config.yaml`; the concrete deployment (GitHub Actions cron + alerting) is future work below
 
 ### Report contract
 - `report/top_25_opportunities.md`, <=25 domains, grouped by category
-- Every figure sourced from `mart_backlink_opportunities`; no metric computed in the report script itself
+- Every figure sourced from `mart_backlink_opportunities`; the report script computes no metric of its own, with one exception: merged same-company duplicate rows get `competitor_count` and `opportunity_score` recomputed from the unioned flags, using the weights read from `dbt/dbt_project.yml` (the mart's own formula, never a hand-copied constant)
 
 ## Implicit contracts & assumptions
 
@@ -58,6 +58,7 @@ Assumptions the pipeline relies on that no schema or test enforces:
 - Real graph scale (`cc-main-2026-apr-may-jun` release): 121,091,933 domain nodes, 3,902,808,757 arcs -- `authority_percentile`'s denominator and score magnitudes assume this order of magnitude
 - Authority proxy = harmonic-centrality rank position from CC's ranks file -> percentile (`1 - (hc_pos-1)/nodes_total`); explicitly not Moz/Ahrefs Domain Authority
 - Domain canonicalization = lowercase + strip trailing dot + strip leading `www.` (`etl/domains.py`); no IDN/punycode handling
+- Brand equivalence is single-domain: the gap test is `links_omni = 0` against the literal `omni.co`, and each competitor flag matches one literal domain. Omni-owned aliases (`exploreomni.com`, `omniapp.co`) and competitor-owned variants (e.g. `sigmacomputing.io`) exist as vertices in the graph but are not folded into their brands -- a domain linking only to an alias would still be reported as a gap, and a competitor-owned site could in principle surface as an "opportunity". Neither case fires in the loaded releases (checked against the real data); closing it would be a small alias table alongside `targets`
 
 ## Design decisions & tradeoffs
 
@@ -66,7 +67,7 @@ Key tradeoffs made to fit the scope and timebox, and why:
 - Web graph vs WARC parsing: domain-level edge list over full WARC HTML parsing -- turns a petabyte-scale crawl into a filter over an edge list; costs anchor text and page-level detail
 - `awk` streaming vs materializing: `gzip -dc | awk` keeps peak memory flat over multi-GB decompressed files instead of loading them whole into Python/DuckDB; awk carries the inner-loop filter, Python only orchestrates
 - All-or-nothing per release: any edge whose `source_id` has no matching vertex row aborts the whole release's load rather than publishing a partial edge set that would silently bias gap analysis
-- Competitor selection: Mode + Lightdash chosen over Tableau/Power BI -- giant incumbents' backlink profiles would drown the gap analysis, working against the "actionable, not a big-number ranking" requirement
+- Competitor selection: Mode + Lightdash chosen over Tableau/Power BI -- giant incumbents' backlink profiles would drown the gap analysis, working against the "actionable, not a big-number ranking" requirement. Among same-stage alternatives: Lightdash is the closest dbt-native, semantic-layer-first analog to Omni's positioning, so its linkers are near-perfect pitch targets; Mode (acquired by ThoughtSpot in 2023, but still a distinct domain and backlink profile) occupied Omni's exact SQL-first collaborative-BI niche, and its aging link profile is precisely the kind competitors' marketers stop defending; Metabase was passed over because thousands of self-hosted OSS instances and footer links inflate its profile with unpitchable noise
 - Categorization: keyword/TLD heuristic + seed-table override (`dbt/seeds/category_overrides.csv`) rather than automated NLP/LLM classification -- target set is small (<=25), and each of the <=25 candidates needs its category checked against its actual site regardless
 - Omni semantic model carries `ai_context` + `synonyms` on the topic/dimensions so Omni's AI/NL features route marketer questions through the governed topic (its `default_filters`, `sample_queries`) instead of an ungoverned ad hoc query
 
@@ -91,4 +92,4 @@ Follow-on work that's out of scope for this timebox but would extend the pipelin
 - Moz/Ahrefs enrichment to replace the harmonic-centrality proxy with an actual Domain Authority metric
 - LLM-assisted categorization with live site fetches, replacing/augmenting the keyword heuristic + manual override table
 - MotherDuck + scheduled deployment (GitHub Actions cron) running `etl/run.py --all` monthly, plus alerting on release failure
-- Weight calibration: tune `score_weights` against actual outreach outcomes (response rate, links won) instead of the fixed 0.5/0.3/0.2 starting point
+- Weight calibration: tune the score weights (`dbt/dbt_project.yml: vars`) against actual outreach outcomes (response rate, links won) instead of the fixed 0.5/0.3/0.2 starting point

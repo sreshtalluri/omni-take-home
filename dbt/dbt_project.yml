@@ -4,9 +4,10 @@ profile: backlinks
 model-paths: ["models"]
 seed-paths: ["seeds"]
 
-# Mirror etl/config.yaml's score_weights (0.5/0.3/0.2) and
-# min_competitor_count (2) -- keep these two files in sync if either
-# changes.
+# Single source of truth for scoring weights and the min-competitor
+# filter: only dbt computes the score, so only dbt carries the values.
+# scripts/generate_report.py reads the weights from this file when it
+# re-scores merged duplicate rows -- never from a copy.
 vars:
   weight_gap_breadth: 0.5
   weight_authority: 0.3

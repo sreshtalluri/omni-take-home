@@ -91,7 +91,7 @@ dimensions:
   present_in_both:
     sql: '"present_in_both"'
     label: Present in Both Releases
-    description: 1 if this domain's competitor link showed up in both the May and June 2026 Common Crawl releases, signaling a persistent rather than one-off link.
+    description: 1 if this domain was seen linking to at least one tracked competitor in both the May and June 2026 Common Crawl releases -- a domain-level persistence signal, not proof the same individual link appeared twice.
   releases_seen:
     sql: '"releases_seen"'
     label: Releases Seen
@@ -108,19 +108,21 @@ dimensions:
     description: Weighted blend of competitor gap breadth, authority percentile, and cross-release persistence. Higher means a better outreach target. See dbt/models/marts/mart_backlink_opportunities.sql for the exact weight formula.
     synonyms: [priority score, ranking score]
 
+# Measure sql uses the fully qualified ${view.field} form -- the only form
+# the fetched docs.omni.co examples ever show (e.g. ${orders.sales_price}).
 measures:
   opportunity_count:
     aggregate_type: count
     label: Opportunity Count
     description: Number of qualifying backlink opportunity domains in the current selection.
   avg_opportunity_score:
-    sql: ${opportunity_score}
+    sql: ${backlink_opportunities.opportunity_score}
     aggregate_type: average
     format: number_2
     label: Avg Opportunity Score
     description: Average opportunity score across the selected domains.
   avg_competitor_coverage:
-    sql: ${competitor_count}
+    sql: ${backlink_opportunities.competitor_count}
     aggregate_type: average
     format: number_1
     label: Avg Competitor Coverage

@@ -2,7 +2,7 @@
 
 ## How this list was built
 
-We compared who links to Sigma, Hex, Mode, and Lightdash against who links to Omni, using Common Crawl's public web graph (the 2026-05 and 2026-06 releases). Every domain below links to at least two of the four competitors but not to omni.co. The ranking score blends three signals: how many competitors a domain links to, how much authority the domain itself carries in the web graph, and whether the link showed up in both releases -- weighted most heavily toward the number of competitors linked. Every one of the 25 domains below was checked by hand against its actual site and has a human-verified category in dbt/seeds/category_overrides.csv, not just a keyword guess.
+We compared who links to Sigma, Hex, Mode, and Lightdash against who links to Omni, using Common Crawl's public web graph (the 2026-05 and 2026-06 releases). Every domain below links to at least two of the four competitors but not to omni.co. The ranking score blends three signals: how many competitors a domain links to, how much authority the domain itself carries in the web graph, and whether the domain showed up as a competitor-linker in both releases -- weighted most heavily toward the number of competitors linked. Every one of the 25 domains below was checked by hand against its actual site and has a human-verified category in dbt/seeds/category_overrides.csv, not just a keyword guess.
 
 ## Community/Platform (3)
 
@@ -57,7 +57,8 @@ Authority pct is each domain's harmonic-centrality rank in Common Crawl's domain
 
 - Common Crawl covers a large but incomplete sample of the web; absence of a link here is not proof it does not exist.
 - Domain-level edges only: we know a domain links to hex.tech, not which page or anchor text -- the category and suggested action above come from that domain's homepage, not necessarily the specific page carrying the link.
-- "Present in both releases" is a soft persistence signal, not confirmation from two independent months: the two releases share two of their three underlying monthly crawls.
+- "Present in both releases" is a soft persistence signal, not confirmation from two independent months: the two releases share two of their three underlying monthly crawls. It is also domain-level -- the domain was seen linking to at least one of the four competitors in each release, not necessarily the same competitor twice.
+- Some high-scoring rows are platform or aggregator domains (e.g. github.com, blogspot.com) with no single outreach contact. They are kept -- each with an explicit submit, internal-fix, or skip action -- rather than silently swapped for lower-ranked pitchable domains: this list reports what the competitor link data says, and the suggested-action column, including its "don't bother" calls, is the deliverable. Filtering them out would hide that competitors' most authoritative links come from platform presence, which is an internal to-do, not an outreach email.
 - montecarlodata.com and montecarlo.ai are the same company (the former redirects to the latter): they are merged into the single montecarlo.ai row above (see report/duplicates.csv) rather than counted as two separate opportunities, so the 25 rows above are 25 distinct companies, not 25 domain strings.
 - Two domains above (getdbt.tech, backlinks.sbs) did not resolve when checked by hand; their categories and actions are best-guess (from the domain name and DNS records only), not confirmed from a live site.
 

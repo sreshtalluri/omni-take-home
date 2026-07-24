@@ -61,13 +61,13 @@ Single-release alternative (~18GB, bypasses the Makefile's `--all`):
 ```
 uv run python -m etl.run --release cc-main-2026-apr-may-jun
 ```
-`cc-main-2026-apr-may-jun` alone already contains both crawls the assignment requires (see "Collections mapping" below). Running it alone drops the `present_in_both` persistence signal, which needs two releases -- `weight_persistence` would need to be zeroed and the remaining weights renormalized in `etl/config.yaml` and `dbt/dbt_project.yml`. See `SPEC.md`.
+`cc-main-2026-apr-may-jun` alone already contains both crawls the assignment requires (see "Collections mapping" below). Running it alone drops the `present_in_both` persistence signal, which needs two releases -- `weight_persistence` would need to be zeroed and the remaining weights renormalized in `dbt/dbt_project.yml`. See `SPEC.md`.
 
 ### 3. `make dbt`
 `cd dbt && uv run dbt build --profiles-dir .` -- builds staging -> intermediate -> mart and runs schema + singular tests against whatever step 2 loaded.
 
 ### 4. `make report`
-`uv run python scripts/generate_report.py` -- renders `report/top_25_opportunities.md` from `mart_backlink_opportunities`, plus two small curated CSVs (`dbt/seeds/category_overrides.csv`, `report/actions.csv`) for the human-verified category and suggested action on each of the top 25. Every count, score, and percentile in the report comes from DuckDB; the script formats and joins, it never computes a new metric.
+`uv run python scripts/generate_report.py` -- renders `report/top_25_opportunities.md` from `mart_backlink_opportunities`, plus two small curated CSVs (`dbt/seeds/category_overrides.csv`, `report/actions.csv`) for the human-verified category and suggested action on each of the top 25. Every count, score, and percentile in the report comes from DuckDB; the script formats and joins, computing nothing of its own except re-scoring merged same-company duplicate rows with the weights read from `dbt/dbt_project.yml` (see the script docstring).
 
 ## Deliverables map
 

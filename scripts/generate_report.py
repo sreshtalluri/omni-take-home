@@ -2,7 +2,12 @@
 three small curated CSVs. Every quantitative figure in the output -- domain
 counts, scores, authority percentiles, competitor flags, release node
 counts -- comes from DuckDB; this script formats, merges, and joins, it
-never computes a new metric.
+never computes a new metric, with one deliberate exception: when known
+same-company duplicate rows merge, the merged row's competitor_count and
+opportunity_score are recomputed from the unioned link flags using the
+same formula and weights dbt used (read live from dbt/dbt_project.yml,
+not hand-copied), so a merged row can never display flags and a score
+that disagree with each other.
 
 Beyond the mart, this script reads three curation artifacts (not data
 sources):
@@ -28,8 +33,9 @@ sources):
 
 Duplicate handling: when picking the top 25, every duplicate_domain's row
 is merged into its canonical_domain's row (competitor-link flags and
-present_in_both unioned/OR'd, authority and score kept at the better of
-the two, category taken only from the canonical row) and dropped from
+present_in_both unioned/OR'd, authority kept at the better of the two,
+competitor_count and opportunity_score recomputed from the merged values,
+category taken only from the canonical row) and dropped from
 consideration on its own. The merged row keeps whichever rank position the
 better of the two would have earned, and the next-best-ranked distinct
 company fills the slot that would otherwise go to press with 25 domain
@@ -47,9 +53,11 @@ from collections import defaultdict
 from pathlib import Path
 
 import duckdb
+import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DB_PATH = REPO_ROOT / "data" / "backlinks.duckdb"
+DBT_PROJECT_YML = REPO_ROOT / "dbt" / "dbt_project.yml"
 ACTIONS_CSV = REPO_ROOT / "report" / "actions.csv"
 OVERRIDES_CSV = REPO_ROOT / "dbt" / "seeds" / "category_overrides.csv"
 DUPLICATES_CSV = REPO_ROOT / "report" / "duplicates.csv"
@@ -98,10 +106,20 @@ def _read_duplicates() -> list:
         return list(csv.DictReader(f))
 
 
+def _score_weights() -> dict:
+    """The mart's scoring weights, read from dbt_project.yml so merged
+    rows are re-scored with exactly what dbt used -- never a hand-copied
+    constant that could drift."""
+    dbt_vars = yaml.safe_load(DBT_PROJECT_YML.read_text())["vars"]
+    return {k: dbt_vars[k] for k in
+            ("weight_gap_breadth", "weight_authority", "weight_persistence")}
+
+
 def _merge_duplicates(all_rows: list, duplicates: list) -> list:
     """Collapse known same-company duplicate rows into their canonical
     row and return one merged record per distinct company, unsorted."""
     by_domain = {r["source_domain"]: r for r in all_rows}
+    weights = _score_weights()
 
     canonical_of = {}
     for d in duplicates:
@@ -131,9 +149,18 @@ def _merge_duplicates(all_rows: list, duplicates: list) -> list:
                 rec[col] = max(rec[col], other[col])
             rec["authority_percentile"] = max(rec["authority_percentile"],
                                               other["authority_percentile"])
-            rec["opportunity_score"] = max(rec["opportunity_score"],
-                                           other["opportunity_score"])
         rec["competitor_count"] = sum(rec[c] for c in LINK_COLS)
+        if extra:
+            # Unioning flags can raise competitor_count above what either
+            # original row had, so the score is recomputed with the mart's
+            # own formula (mart_backlink_opportunities.sql) rather than
+            # keeping either row's now-stale value.
+            rec["opportunity_score"] = (
+                weights["weight_gap_breadth"]
+                * rec["competitor_count"] / len(LINK_COLS)
+                + weights["weight_authority"] * rec["authority_percentile"]
+                + weights["weight_persistence"] * rec["present_in_both"]
+            )
         rec["merged_from"] = extra
         merged.append(rec)
     return merged
@@ -229,8 +256,9 @@ def main():
         "links to at least two of the four competitors but not to "
         "omni.co. The ranking score blends three signals: how many "
         "competitors a domain links to, how much authority the domain "
-        "itself carries in the web graph, and whether the link showed up "
-        "in both releases -- weighted most heavily toward the number of "
+        "itself carries in the web graph, and whether the domain showed "
+        "up as a competitor-linker in both releases -- weighted most "
+        "heavily toward the number of "
         f"competitors linked. Every one of the {len(rows)} domains below "
         "was checked by hand against its actual site and has a "
         "human-verified category in dbt/seeds/category_overrides.csv, "
@@ -290,7 +318,20 @@ def main():
         "the specific page carrying the link.",
         "- \"Present in both releases\" is a soft persistence signal, not "
         "confirmation from two independent months: the two releases "
-        "share two of their three underlying monthly crawls.",
+        "share two of their three underlying monthly crawls. It is also "
+        "domain-level -- the domain was seen linking to at least one of "
+        "the four competitors in each release, not necessarily the same "
+        "competitor twice.",
+        "- Some high-scoring rows are platform or aggregator domains "
+        "(e.g. github.com, blogspot.com) with no single outreach "
+        "contact. They are kept -- each with an explicit submit, "
+        "internal-fix, or skip action -- rather than silently swapped "
+        "for lower-ranked pitchable domains: this list reports what the "
+        "competitor link data says, and the suggested-action column, "
+        "including its \"don't bother\" calls, is the deliverable. "
+        "Filtering them out would hide that competitors' most "
+        "authoritative links come from platform presence, which is an "
+        "internal to-do, not an outreach email.",
         "- montecarlodata.com and montecarlo.ai are the same company "
         "(the former redirects to the latter): they are merged into the "
         "single montecarlo.ai row above (see report/duplicates.csv) "
