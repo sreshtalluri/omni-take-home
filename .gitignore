@@ -1,4 +1,8 @@
-data/
+# data/ is not blanket-ignored: data/slices/ holds small committed run
+# artifacts so reviewers can rebuild the DuckDB + mart without the ~35GB pull
+data/raw/
+data/logs/
+data/checkpoints/
 .venv/
 __pycache__/
 dbt/target/

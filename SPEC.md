@@ -70,7 +70,7 @@ Skeleton only -- headers and bullet stubs, prose to be written by the author. Se
 - Idempotent load: delete-where-release then insert, in one transaction, keyed on release label; rerunning a completed release leaves row counts unchanged
 - All-or-nothing publish: any unresolved `source_id` raises `LoadError` before commit; transaction rolls back; nothing published for that release
 - Empty slices are valid: a tracked target with zero backlinks in a release loads as zero rows, distinct from the corrupt/partial data the all-or-nothing policy exists to catch
-- [run evidence: kill-and-resume proof + row counts - filled after real run]
+- Run evidence (2026-07-23 real run): 2026-05 loaded 2,924 edges / 2,413 ranked domains; 2026-06 loaded 3,145 edges / 2,560 ranked domains; rerunning the completed 2026-06 release end-to-end took 66s wall clock (vs ~40min cold) with byte-identical counts -- manifest skipped all downloads and extracts, load re-ran idempotently; `dbt build` on the combined releases: 14/14 PASS; mart produced 277 candidate domains (20 linking to all 4 competitors, 60 to 3, 197 to 2; 227 present in both releases)
 
 ## What I'd do with a week
 
