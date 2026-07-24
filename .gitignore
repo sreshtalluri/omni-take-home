@@ -9,3 +9,6 @@ logs/
 *.duckdb
 *.duckdb.wal
 .superpowers/
+.gstack/
+.pytest_cache/
+*.egg-info/
