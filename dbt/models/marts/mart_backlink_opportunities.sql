@@ -46,4 +46,9 @@ categorized as (
 select * from categorized
 where links_omni = 0
   and competitor_count >= {{ var('min_competitor_count') }}
-order by opportunity_score desc
+-- deterministic tie-break: several 4-competitor domains round to authority
+-- 1.0 at the top of the ranking, so opportunity_score alone doesn't fully
+-- order them. Mirrored in scripts/generate_report.py's query so the mart
+-- and the report always agree on rank order.
+order by opportunity_score desc, competitor_count desc,
+    authority_percentile desc, source_domain asc

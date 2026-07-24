@@ -1,6 +1,8 @@
-.PHONY: etl dbt report test all
+.PHONY: etl load-slices dbt report test all
 etl:
 	uv run python -m etl.run --all
+load-slices:
+	uv run python scripts/load_from_slices.py
 dbt:
 	cd dbt && uv run dbt build --profiles-dir .
 report:

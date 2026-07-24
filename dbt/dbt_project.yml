@@ -25,10 +25,12 @@ models:
 seeds:
   backlinks:
     category_overrides:
-      # category_overrides.csv is header-only until Task 9's manual curation
-      # pass. With zero data rows dbt has nothing to infer column types
-      # from, so pin them explicitly -- otherwise `dbt seed`/`dbt build`
-      # errors on the empty file instead of loading an empty table.
+      # Task 9 populated this with the 25 top-ranked domains, each checked
+      # against its actual site (see report/top_25_opportunities.md and
+      # .superpowers/sdd/task-9-report.md for the curation log). Explicit
+      # column_types kept even though the file has data rows now, in case a
+      # future curation pass ever leaves it back at header-only -- dbt has
+      # nothing to infer types from on a zero-row CSV.
       +column_types:
         source_domain: varchar
         category: varchar

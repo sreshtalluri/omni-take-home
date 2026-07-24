@@ -14,13 +14,18 @@ Common Crawl web graph releases (data.commoncrawl.org, HTTPS)
   cc-main-2026-apr-may-jun  -> release label "2026-06"
         |
         v  etl/run.py --release <id>  (download -> extract -> load, checkpointed per step)
-  DuckDB raw tables (data/backlinks.duckdb)
+  data/slices/<release>/*.tsv + graph.stats  (committed, ~500KB)
+        |                                         ^
+        |                                         | scripts/load_from_slices.py
+        v  etl.load.load_release                  | (skips download+extract, same load call)
+  DuckDB raw tables (data/backlinks.duckdb) <------+
     raw_backlink_edges, raw_domain_ranks, raw_graph_stats
         |
         v  dbt build
   staging -> intermediate -> mart (mart_backlink_opportunities)
         |
-        +--> report/top_25_opportunities.md  (scripts/generate_report.py)
+        +--> report/top_25_opportunities.md  (scripts/generate_report.py,
+        |      reads dbt/seeds/category_overrides.csv + report/actions.csv too)
         +--> omni/*.view + *.topic.yaml       (semantic model over the mart)
 ```
 
@@ -36,8 +41,19 @@ Run in order.
 ### 1. `make test`
 Zero network. Runs the pytest suite (23 tests) against committed fixtures in `tests/fixtures/` -- including a full download-skipped/extract/load pipeline run and a checkpoint-resume case. This is the reproducibility proof for the ETL layer without touching Common Crawl or `data/`.
 
-### 2. `make etl`
-Runs `uv run python -m etl.run --all` -- downloads and processes **both** configured releases.
+### 2. Get data into DuckDB -- quick or full
+
+**Quick, no download (recommended for review):**
+```
+make load-slices && make dbt && make report
+```
+`make load-slices` (`scripts/load_from_slices.py`) loads the already-filtered slices committed under `data/slices/<release>/` (edges/sources/ranks TSVs + `graph.stats`, ~500KB total for both releases) straight into `data/backlinks.duckdb`, via the exact same `etl.load.load_release` call -- same idempotent delete+insert, same all-or-nothing failure semantics -- that `make etl` uses at the end of its download+extract run. Release ids and labels are read from `etl/config.yaml`, the same config `make etl` reads, so the two paths can't silently diverge on which releases "count". This reproduces `dbt build` and the report without a multi-GB download.
+
+**Full, from raw Common Crawl:**
+```
+make etl
+```
+Runs `uv run python -m etl.run --all` -- downloads and processes **both** configured releases from scratch.
 
 **Warning: ~35GB total download** (vertices ~850MB + edges ~14-16GB + ranks ~2.2GB per release), 30-60+ minutes depending on bandwidth. Each release is checkpointed independently at `data/checkpoints/<release-id>.json`; a killed run resumes from the last completed step (download / extract / load) instead of restarting from scratch.
 
@@ -48,19 +64,19 @@ uv run python -m etl.run --release cc-main-2026-apr-may-jun
 `cc-main-2026-apr-may-jun` alone already contains both crawls the assignment requires (see "Collections mapping" below). Running it alone drops the `present_in_both` persistence signal, which needs two releases -- `weight_persistence` would need to be zeroed and the remaining weights renormalized in `etl/config.yaml` and `dbt/dbt_project.yml`. See `SPEC.md`.
 
 ### 3. `make dbt`
-`cd dbt && uv run dbt build --profiles-dir .` -- builds staging -> intermediate -> mart and runs schema + singular tests against whatever `make etl` loaded.
+`cd dbt && uv run dbt build --profiles-dir .` -- builds staging -> intermediate -> mart and runs schema + singular tests against whatever step 2 loaded.
 
 ### 4. `make report`
-`uv run python scripts/generate_report.py` -- renders `report/top_25_opportunities.md` from `mart_backlink_opportunities` only. Every number in the report comes from the mart; the script formats, it never computes a new metric.
+`uv run python scripts/generate_report.py` -- renders `report/top_25_opportunities.md` from `mart_backlink_opportunities`, plus two small curated CSVs (`dbt/seeds/category_overrides.csv`, `report/actions.csv`) for the human-verified category and suggested action on each of the top 25. Every count, score, and percentile in the report comes from DuckDB; the script formats and joins, it never computes a new metric.
 
 ## Deliverables map
 
 | Assignment deliverable | Location |
 |---|---|
 | 1. ETL framework + code | `etl/` (`config.yaml`, `config.py`, `domains.py`, `download.py`, `extract.py`, `load.py`, `run.py`), tested by `tests/` |
-| 2. dbt project | `dbt/` (`dbt_project.yml`, `profiles.yml`, `models/staging`, `models/intermediate`, `models/marts`, `seeds/category_overrides.csv`) |
+| 2. dbt project | `dbt/` (`dbt_project.yml`, `profiles.yml`, `models/staging`, `models/intermediate`, `models/marts`, `seeds/category_overrides.csv` -- 25 site-verified category overrides) |
 | 3. Omni semantic model | `omni/backlink_opportunities.view`, `omni/backlink_opportunities.topic.yaml` |
-| 4. Top-25 recommended domains report | `report/top_25_opportunities.md`, produced by `make report` (step 4 above) |
+| 4. Top-25 recommended domains report | `report/top_25_opportunities.md`, produced by `make report` (step 4 above) from the mart plus `report/actions.csv` (per-domain suggested actions) |
 | 5. Tech spec | `SPEC.md` |
 | 6. Git repo | this repository |
 
@@ -70,6 +86,8 @@ uv run python -m etl.run --release cc-main-2026-apr-may-jun
 - dbt project: staging -> intermediate -> mart, schema + singular tests, seed-based category override table.
 - Mock Omni semantic model (view + topic) over `mart_backlink_opportunities`, syntax verified against fetched docs.omni.co pages rather than written from memory.
 - Both required Common Crawl collections -- May 2026 (`CC-MAIN-2026-21`) and June 2026 (`CC-MAIN-2026-25`) -- covered via the two web graph releases in `etl/config.yaml`.
+- All 25 domains in the final report were manually re-categorized against their actual homepage (fetched, not assumed) and given a per-domain suggested action -- not the raw keyword-heuristic category or a generic per-category action.
+- `scripts/load_from_slices.py` (`make load-slices`) loads the committed `data/slices/` straight into DuckDB via the same `etl.load.load_release` the full pipeline uses, so `dbt build` and the report are reproducible without the ~35GB download.
 
 ## Out of scope
 
