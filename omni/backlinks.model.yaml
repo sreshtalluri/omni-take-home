@@ -1,0 +1,42 @@
+# omni/backlinks.model.yaml
+#
+# Mock Omni model file (not connected to a live Omni instance). Syntax
+# verified against fetched docs:
+#   https://docs.omni.co/modeling/models/index.md            (full top-level parameter list)
+#   https://docs.omni.co/modeling/models/included-views.md
+#   https://docs.omni.co/modeling/models/topics.md            (topics: deprecated here, see below)
+#   https://docs.omni.co/integrations/git/settings.md         (model path convention: omni/<model-name>)
+#   https://docs.omni.co/connect-data/setup/motherduck.md     (Omni's actual DuckDB path)
+#
+# No `name:` key: the full parameter list at modeling/models/index.md has no
+# `name` entry (only view files do, and there it is explicitly "implicit in
+# the file name" / "cannot be explicitly set" -- see
+# docs.omni.co/modeling/views/parameters/name.md). In real Omni a model's
+# identity comes from the connection it's attached to and its git sync path,
+# not a YAML field -- and this mock has no live connection to attach to, so
+# there is nothing to name here either.
+#
+# `topics:` is deliberately absent: nesting a topics list inside a model file
+# was deprecated 2024-12-10 and now errors on save
+# (docs.omni.co/modeling/models/topics.md). See
+# omni/backlink_opportunities.topic for the actual topic definition.
+#
+# File extension kept as `.model.yaml`, per the task brief, unchanged. Unlike
+# view files (docs.omni.co/modeling/views/parameters/name.md gives a direct
+# "named foo.view" example), no fetched docs page gives an equivalent literal
+# example for model files, so there's no clear basis to rename this one --
+# see task-10-report.md for the full extension survey.
+#
+# Omni has no local-DuckDB-file connector: the supported path is MotherDuck
+# (docs.omni.co/connect-data/setup/motherduck.md), not the raw .duckdb file
+# this pipeline writes to data/backlinks.duckdb. That gap -- not just scope
+# triage -- is why this model can only ever be a mock: connecting it for
+# real would mean migrating to MotherDuck first (already noted as a
+# with-a-week item in the pipeline plan).
+#
+# included_views scopes this mock model to the one view Growth Marketing
+# should see. The dbt staging/intermediate layers and raw_* loader tables
+# that also live in DuckDB's main schema are deliberately not exposed here.
+
+included_views:
+  - main.backlink_opportunities
