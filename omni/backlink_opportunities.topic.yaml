@@ -2,7 +2,7 @@
 #
 # Mock Omni topic file (not connected to a live Omni instance): the default
 # Growth Marketing lens over the backlink_opportunities view. Syntax verified
-# against fetched docs (round 1 + rework round 1 -- see task-10-report.md):
+# against fetched docs:
 #   https://docs.omni.co/modeling/topics/parameters/index.md       (full parameter list)
 #   https://docs.omni.co/modeling/topics/parameters/base-view.md   (required)
 #   https://docs.omni.co/modeling/topics/parameters/label.md
@@ -20,16 +20,15 @@
 # now error on save (docs.omni.co/modeling/models/topics.md). This mock uses
 # a standalone topic file, the only currently-valid form.
 #
-# File extension: `.topic.yaml`, matching OMNI_MODELING_CONTEXT.md's own
-# naming. Round 1 of this task used a bare `.topic` extension by analogy with
-# the docs' *view*-file convention -- but unlike views (three independent,
-# literal "named foo.view" docs examples, cited in backlink_opportunities.view),
-# no fetched docs page anywhere gives an equivalent literal filename example
-# for a topic file. topics/setup.md walks through creating one in the IDE
-# ("You'll be prompted to enter a name for the topic") without ever showing
-# the resulting file's extension. Absent that evidence, this reverts to the
-# context doc's explicit `.topic.yaml` rather than keeping an unconfirmed
-# guess -- see task-10-report.md "Rework round 1" for the full writeup.
+# File extension: `.topic.yaml`. A bare `.topic` extension (by analogy with
+# the docs' *view*-file convention) was considered, but unlike views (three
+# independent, literal "named foo.view" docs examples, cited in
+# backlink_opportunities.view), no fetched docs page anywhere gives an
+# equivalent literal filename example for a topic file. topics/setup.md
+# walks through creating one in the IDE ("You'll be prompted to enter a name
+# for the topic") without ever showing the resulting file's extension.
+# Absent that evidence, this uses the explicit, unambiguous `.topic.yaml`
+# form rather than an unconfirmed guess.
 #
 # There is no `default_sort` (or any `sort`) topic-level parameter -- checked
 # the full parameter list linked above. The closest documented mechanism for
@@ -60,8 +59,8 @@ ai_context: |
 
 # Redundant with the mart's own WHERE clause today (every row already has
 # competitor_count >= 2), but kept as an explicit, visible-and-removable
-# default per the brief: it documents intent in the semantic layer itself
-# and keeps the topic correct if the mart's threshold is ever loosened.
+# default: it documents intent in the semantic layer itself and keeps the
+# topic correct if the mart's threshold is ever loosened.
 default_filters:
   backlink_opportunities.competitor_count:
     greater_than_or_equal_to: 2

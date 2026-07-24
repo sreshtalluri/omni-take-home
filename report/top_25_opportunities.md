@@ -17,7 +17,7 @@ We compared who links to Sigma, Hex, Mode, and Lightdash against who links to Om
 | Rank | Domain | Links to | Present in both releases | Authority pct | Score | Suggested action |
 |---|---|---|---|---|---|---|
 | 4 | webcatalog.io | Sigma, Hex, Mode, Lightdash | Yes | 1.000 | 1.000 | App catalog of 50,000+ web apps with a public 'Submit an app' flow; submit Omni so it is listed alongside Sigma/Hex/Mode/Lightdash. |
-| 7 | sbookscan.com | Sigma, Hex, Mode, Lightdash | Yes | 0.988 | 0.997 | Large auto-aggregated 'submit your link' directory (~1M listed sites, not editorially curated); low outreach value -- at most a quick 'Add Your Link' submission, not worth prioritizing over the dev-tooling targets above. |
+| 7 | sbookscan.com | Sigma, Hex, Mode, Lightdash | Yes | 0.988 | 0.997 | Large auto-aggregated 'submit your link' directory (~1M listed sites, not editorially curated); low outreach value -- at most a quick 'Add Your Link' submission, not worth prioritizing over the dev-tooling targets in this report. |
 | 9 | statussight.com | Sigma, Hex, Mode, Lightdash | Yes | 0.978 | 0.993 | Aggregates real-time status pages for 3,000+ SaaS tools (GitHub, Zoom, Notion, Figma, etc.); check whether they take submissions to track a new service and request Omni's status page be added. |
 | 11 | cyberdb.co | Sigma, Hex, Mode, Lightdash | Yes | 0.940 | 0.982 | Vendor database scoped to cybersecurity + 'enterprise AI' categories, not BI/analytics by name; lower-confidence fit -- if pursued, ask info@cyberdb.co whether an AI-driven analytics vendor fits their AI category before investing more time. |
 | 19 | greenhouse.io | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | ATS/job-board platform with customer case studies and a hosted jobs board; if Omni uses Greenhouse for hiring, verify the public job board links to omni.co -- a customer case study is a secondary long-shot if Omni becomes a Greenhouse customer. |
@@ -56,9 +56,9 @@ Authority pct is each domain's harmonic-centrality rank in Common Crawl's domain
 ## Caveats
 
 - Common Crawl covers a large but incomplete sample of the web; absence of a link here is not proof it does not exist.
-- Domain-level edges only: we know a domain links to hex.tech, not which page or anchor text -- the category and suggested action below come from that domain's homepage, not necessarily the specific page carrying the link.
+- Domain-level edges only: we know a domain links to hex.tech, not which page or anchor text -- the category and suggested action above come from that domain's homepage, not necessarily the specific page carrying the link.
 - "Present in both releases" is a soft persistence signal, not confirmation from two independent months: the two releases share two of their three underlying monthly crawls.
-- montecarlodata.com and montecarlo.ai are the same company (the former redirects to the latter): they are merged into the single montecarlo.ai row below (see report/duplicates.csv) rather than counted as two separate opportunities, so the 25 rows below are 25 distinct companies, not 25 domain strings.
-- Two domains below (getdbt.tech, backlinks.sbs) did not resolve when checked by hand; their categories and actions are best-guess (from the domain name and DNS records only), not confirmed from a live site.
+- montecarlodata.com and montecarlo.ai are the same company (the former redirects to the latter): they are merged into the single montecarlo.ai row above (see report/duplicates.csv) rather than counted as two separate opportunities, so the 25 rows above are 25 distinct companies, not 25 domain strings.
+- Two domains above (getdbt.tech, backlinks.sbs) did not resolve when checked by hand; their categories and actions are best-guess (from the domain name and DNS records only), not confirmed from a live site.
 
-277 candidate domains met the filter (link to at least two of Sigma, Hex, Mode, and Lightdash, not to omni.co); the 25 highest-ranked distinct companies are shown above (one same-company duplicate among them was merged into a single row -- see the caveats above).
+277 candidate domains met the filter (link to at least two of Sigma, Hex, Mode, and Lightdash, not to omni.co); the 25 highest-ranked distinct companies are shown above (one same-company duplicate among them was merged into its canonical row -- see the caveats above).

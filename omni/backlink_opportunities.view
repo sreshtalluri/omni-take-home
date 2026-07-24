@@ -1,8 +1,7 @@
 # omni/backlink_opportunities.view
 #
 # Mock Omni view file (not connected to a live Omni instance) over the dbt
-# mart `mart_backlink_opportunities`. Syntax verified against fetched docs
-# (round 1 + rework round 1 -- see task-10-report.md for the full list):
+# mart `mart_backlink_opportunities`. Syntax verified against fetched docs:
 #   https://docs.omni.co/modeling/views/parameters/index.md       (full parameter list)
 #   https://docs.omni.co/modeling/views/parameters/name.md        (name is implicit in
 #     the file name and "cannot be explicitly set in the file" -- so there is no
@@ -15,11 +14,10 @@
 #   https://docs.omni.co/modeling/measures/parameters/{aggregate-type,sql,description,label,format}.md
 #   https://docs.omni.co/modeling/models/format-values.md         (named format list: percent_1, number_2, ...)
 #   https://docs.omni.co/modeling/develop/ai-optimization.md      (worked example titled
-#     `products.view`, a third independent confirmation of the bare `.view` extension --
-#     see task-10-report.md "Rework round 1" for the full extension survey)
+#     `products.view`, a third independent confirmation of the bare `.view` extension)
 #
-# File extension: bare `.view`, not `.view.yaml`. Kept from round 1 -- the docs give
-# three independent, literal "named foo.view"-style examples (see above), so this
+# File extension: bare `.view`, not `.view.yaml`. The docs give three
+# independent, literal "named foo.view"-style examples (see above), so this
 # is evidence-backed, not a guess.
 #
 # Dimension SQL uses quoted identifiers (`sql: '"col"'`), matching the
@@ -33,8 +31,10 @@
 # every row to links_omni = 0, so the column is constant here and would give
 # a marketer nothing to segment on.
 #
-# Reconciliation against OMNI_MODELING_CONTEXT.md's illustrative field list
-# (dbt mart is the contract -- see task-10-report.md "Rework round 1" for detail):
+# Field-naming reconciliation against an earlier illustrative field list used
+# while modeling this view: the dbt mart's real column names are the
+# contract, so names from that earlier list are supplied as `label:` text
+# rather than used to rename columns:
 #   - links_to_sigma/hex/mode/lightdash -> links_sigma/hex/mode/lightdash. The
 #     mart has no `links_to_*` columns; kept the real column names as dimension
 #     keys and used `label:` ("Links to Sigma", etc.) to supply the friendlier
@@ -44,6 +44,9 @@
 #   - crawl_release -> dropped; no such column exists anywhere in the mart.
 #     releases_seen (count) and present_in_both (flag) are the real columns
 #     that carry this signal and are modeled below instead.
+
+label: Backlink Opportunities
+description: One row per referring domain that links to at least two of Sigma, Hex, Mode, or Lightdash but not to omni.co, sourced from mart_backlink_opportunities.
 
 schema: main
 table_name: mart_backlink_opportunities

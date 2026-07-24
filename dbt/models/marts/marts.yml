@@ -15,6 +15,5 @@ models:
         description: >
           Range-checked (2-4) by the singular test
           tests/assert_competitor_count_in_range.sql rather than a
-          dbt_utils.accepted_range schema test, per controller
-          clarification -- avoids adding the dbt_utils package for one
-          range check.
+          dbt_utils.accepted_range schema test -- a singular test avoids
+          adding the dbt_utils package dependency for one range check.

@@ -1,15 +1,19 @@
 # Tech Spec
 
-Skeleton only -- headers and bullet stubs, prose to be written by the author. See `README.md` for reproduction steps and the deliverables map.
+See `README.md` for reproduction steps and the deliverables map.
 
 ## Problem framing
 
-- Assignment question: which high-value backlink opportunities should Omni pursue, based on competitor backlink patterns (verbatim in `CLAUDE_CONTEXT.md` §1)
+The assignment, the constraints it imposes, and the source data the pipeline runs against:
+
+- Assignment question: which high-value backlink opportunities should Omni pursue, based on competitor backlink patterns
 - Hard constraints: <=25 referring domains; actionable for Growth Marketing, not a raw link-count ranking; recurring scheduled pipeline; retry/recovery semantics; few-hours timebox, MVP
 - Competitor set: omni.co, sigmacomputing.com, hex.tech, mode.com, lightdash.com
 - Required source data: Common Crawl May 2026 + June 2026 collections (`CC-MAIN-2026-21`, `CC-MAIN-2026-25`)
 
 ## Explicit contracts
+
+The schema and guarantees each layer of the pipeline exposes to the next, from raw ingestion through to the report:
 
 ### Raw (`etl/load.py` DDL, DuckDB)
 - `raw_backlink_edges(release, source_id, source_rev_domain, target_domain)`
@@ -44,6 +48,8 @@ Skeleton only -- headers and bullet stubs, prose to be written by the author. Se
 
 ## Implicit contracts & assumptions
 
+Assumptions the pipeline relies on that no schema or test enforces:
+
 - CC web graph file availability and text format assumed stable release-to-release at `data.commoncrawl.org/projects/hyperlinkgraph/<release>/domain/`; not contractually guaranteed by Common Crawl
 - Column layouts (`etl/config.yaml: columns`, 1-based indices) pinned from a live peek at the real files, not from documentation -- must be reverified if a future release reorders columns
 - Collections -> releases mapping: `cc-main-2026-mar-apr-may` -> `2026-05` (latest input crawl `CC-MAIN-2026-21` = May); `cc-main-2026-apr-may-jun` -> `2026-06` (inputs `CC-MAIN-2026-17`/`-21`/`-25`, latest `CC-MAIN-2026-25` = June; this release alone contains both required crawls)
@@ -55,14 +61,18 @@ Skeleton only -- headers and bullet stubs, prose to be written by the author. Se
 
 ## Design decisions & tradeoffs
 
+Key tradeoffs made to fit the scope and timebox, and why:
+
 - Web graph vs WARC parsing: domain-level edge list over full WARC HTML parsing -- turns a petabyte-scale crawl into a filter over an edge list; costs anchor text and page-level detail
 - `awk` streaming vs materializing: `gzip -dc | awk` keeps peak memory flat over multi-GB decompressed files instead of loading them whole into Python/DuckDB; awk carries the inner-loop filter, Python only orchestrates
 - All-or-nothing per release: any edge whose `source_id` has no matching vertex row aborts the whole release's load rather than publishing a partial edge set that would silently bias gap analysis
 - Competitor selection: Mode + Lightdash chosen over Tableau/Power BI -- giant incumbents' backlink profiles would drown the gap analysis, working against the "actionable, not a big-number ranking" requirement
-- Categorization: keyword/TLD heuristic + seed-table override (`dbt/seeds/category_overrides.csv`) rather than automated NLP/LLM classification -- target set is small (<=25), and the brief requires checking the actual site before assigning a category
+- Categorization: keyword/TLD heuristic + seed-table override (`dbt/seeds/category_overrides.csv`) rather than automated NLP/LLM classification -- target set is small (<=25), and each of the <=25 candidates needs its category checked against its actual site regardless
 - Omni semantic model carries `ai_context` + `synonyms` on the topic/dimensions so Omni's AI/NL features route marketer questions through the governed topic (its `default_filters`, `sample_queries`) instead of an ungoverned ad hoc query
 
 ## Recovery semantics
+
+How the pipeline retries, resumes, and stays idempotent across partial or repeated runs:
 
 - Retries: HTTP downloads retry up to `http.max_attempts` (5) with exponential backoff (`backoff_base_s * 2^attempt`) + random jitter, bounded per-request timeout (60s)
 - Resumable downloads: HTTP Range requests resume a `.part` file from its current byte offset; a HEAD request checks remote size first so a complete-but-unrenamed `.part` is finalized without an extra GET (avoids a 416 loop against a compliant server)
@@ -73,6 +83,8 @@ Skeleton only -- headers and bullet stubs, prose to be written by the author. Se
 - Run evidence (2026-07-23 real run): 2026-05 loaded 2,924 edges / 2,413 ranked domains; 2026-06 loaded 3,145 edges / 2,560 ranked domains; rerunning the completed 2026-06 release end-to-end took 66s wall clock (vs ~40min cold) with byte-identical counts -- manifest skipped all downloads and extracts, load re-ran idempotently; `dbt build` on the combined releases: 14/14 PASS; mart produced 277 candidate domains (20 linking to all 4 competitors, 60 to 3, 197 to 2; 227 present in both releases)
 
 ## What I'd do with a week
+
+Follow-on work that's out of scope for this timebox but would extend the pipeline further:
 
 - WARC anchor-text extraction for the top candidate domains (byte-range fetch just the linking pages, not full WARC parsing at scale)
 - Per-crawl link velocity: track opportunity domains across more than two releases to distinguish growing vs. one-off links

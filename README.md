@@ -39,7 +39,7 @@ Run in order.
 - ~40GB free disk for a full two-release `make etl` run. `make test` needs none.
 
 ### 1. `make test`
-Zero network. Runs the pytest suite (23 tests) against committed fixtures in `tests/fixtures/` -- including a full download-skipped/extract/load pipeline run and a checkpoint-resume case. This is the reproducibility proof for the ETL layer without touching Common Crawl or `data/`.
+No external network. Runs the pytest suite (23 tests) against committed fixtures in `tests/fixtures/` -- including a full download-skipped/extract/load pipeline run and a checkpoint-resume case. This is the reproducibility proof for the ETL layer without touching Common Crawl or `data/`.
 
 ### 2. Get data into DuckDB -- quick or full
 

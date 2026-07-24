@@ -1,14 +1,19 @@
 """Checkpointed orchestrator: download -> extract -> load, one release at a
-time. Every step is gated by a per-release Manifest at
+time. Downloads and extracts are gated by a per-release Manifest at
 data/checkpoints/<release>.json, so a crashed/interrupted run resumes at the
 first incomplete step on rerun instead of redoing multi-GB downloads or
-scans. There is no partial-publish path: any unhandled exception propagates
-out of run_release (and out of main's per-release loop), so a failed release
-exits the process non-zero, and load_release's delete+insert transaction --
-the only step that writes to the published DuckDB tables -- either never
-runs or commits atomically. Either way there is nothing partial to clean up.
+scans. The load step is not manifest-gated -- it always runs, including on
+resume -- but it is safe to repeat: load_release's delete+insert transaction
+is idempotent, keyed on release label, so a rerun leaves row counts
+unchanged. There is no partial-publish path: any unhandled exception
+propagates out of run_release (and out of main's per-release loop), so a
+failed release exits the process non-zero, and load_release's delete+insert
+transaction -- the only step that writes to the published DuckDB tables --
+either never runs or commits atomically. Either way there is nothing
+partial to clean up.
 """
 import argparse
+import shutil
 import sys
 from pathlib import Path
 
@@ -72,6 +77,16 @@ def run_release(cfg, release, files_override=None, workdir=None, db_path=None):
                      rows=filter_ranks(local["ranks"], src_revs, ranks_tsv, cfg.columns))
 
     nodes = read_stats(local["stats"])["nodes"]
+
+    # Mirror the release's stats file into the slices dir as graph.stats,
+    # alongside the edges/sources/ranks TSVs above, so a later `make
+    # load-slices` (scripts/load_from_slices.py) has what it needs without
+    # re-downloading. Skipped when files_override already points the stats
+    # source at this exact destination (nothing to copy onto itself).
+    stats_dest = slices_dir / "graph.stats"
+    if Path(local["stats"]).resolve() != stats_dest.resolve():
+        shutil.copy2(local["stats"], stats_dest)
+
     counts = load_release(db_path or cfg.duckdb_path, release.label,
                           {"edges": edges_tsv, "sources": sources_tsv,
                            "ranks": ranks_tsv}, nodes)

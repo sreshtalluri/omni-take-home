@@ -19,13 +19,11 @@ scored as (
 ),
 categorized as (
     select s.*,
-        -- NOTE: regexp_matches(...), not `similar to '%(...)%'` as in the
-        -- brief -- see task-7-report.md "Deviations". In the installed
-        -- DuckDB (1.5.5), SIMILAR TO treats `%`/`_` as literal characters
+        -- NOTE: regexp_matches(...), not `similar to '%(...)%'`. DuckDB
+        -- 1.5.5 treats SIMILAR TO's `%` and `_` as literal characters
         -- rather than wildcards (verified empirically: 'ab' similar to '%'
-        -- is false), so the brief's patterns would never match. regexp_matches
-        -- does the same unanchored "contains one of these alternatives"
-        -- check the brief intends.
+        -- is false), so regexp_matches does the intended unanchored
+        -- "contains one of these alternatives" substring match.
         coalesce(o.category,
             case
                 when regexp_matches(s.source_domain, '(top10|best|review|vs|compare|toplist)')

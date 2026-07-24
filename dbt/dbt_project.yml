@@ -25,8 +25,8 @@ models:
 seeds:
   backlinks:
     category_overrides:
-      # Task 9 populated this with each top-ranked domain's category,
-      # checked against its actual site -- see report/top_25_opportunities.md
+      # Site-verified category corrections for the top 25 domains, checked
+      # against each domain's actual site -- see report/top_25_opportunities.md
       # for the result and report/actions.csv for the per-domain action
       # that came out of the same site-verification pass. Explicit
       # column_types kept even though the file has data rows now, in case a

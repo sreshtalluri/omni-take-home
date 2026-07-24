@@ -286,29 +286,42 @@ def main():
         "absence of a link here is not proof it does not exist.",
         "- Domain-level edges only: we know a domain links to hex.tech, "
         "not which page or anchor text -- the category and suggested "
-        "action below come from that domain's homepage, not necessarily "
+        "action above come from that domain's homepage, not necessarily "
         "the specific page carrying the link.",
         "- \"Present in both releases\" is a soft persistence signal, not "
         "confirmation from two independent months: the two releases "
         "share two of their three underlying monthly crawls.",
         "- montecarlodata.com and montecarlo.ai are the same company "
         "(the former redirects to the latter): they are merged into the "
-        "single montecarlo.ai row below (see report/duplicates.csv) "
+        "single montecarlo.ai row above (see report/duplicates.csv) "
         "rather than counted as two separate opportunities, so the 25 "
-        "rows below are 25 distinct companies, not 25 domain strings.",
-        "- Two domains below (getdbt.tech, backlinks.sbs) did not "
+        "rows above are 25 distinct companies, not 25 domain strings.",
+        "- Two domains above (getdbt.tech, backlinks.sbs) did not "
         "resolve when checked by hand; their categories and actions are "
         "best-guess (from the domain name and DNS records only), not "
         "confirmed from a live site.",
         "",
     ]
 
+    # Derived from the actual merge results for the shown rows, not
+    # hardcoded, so this clause stays correct if report/duplicates.csv
+    # gains or loses entries -- and disappears entirely when there is
+    # nothing to report.
+    merged_count = sum(len(r["merged_from"]) for r in rows)
+    if merged_count == 0:
+        dup_clause = ""
+    elif merged_count == 1:
+        dup_clause = (" (one same-company duplicate among them was merged "
+                      "into its canonical row -- see the caveats above)")
+    else:
+        dup_clause = (f" ({merged_count} same-company duplicates among "
+                      "them were merged into their canonical rows -- see "
+                      "the caveats above)")
     out.append(
         f"{total} candidate domains met the filter (link to at least two "
         "of Sigma, Hex, Mode, and Lightdash, not to omni.co); the "
-        f"{len(rows)} highest-ranked distinct companies are shown above "
-        "(one same-company duplicate among them was merged into a single "
-        "row -- see the caveats above)."
+        f"{len(rows)} highest-ranked distinct companies are shown above"
+        f"{dup_clause}."
     )
     out.append("")
 
