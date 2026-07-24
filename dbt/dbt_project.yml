@@ -25,9 +25,10 @@ models:
 seeds:
   backlinks:
     category_overrides:
-      # Task 9 populated this with the 25 top-ranked domains, each checked
-      # against its actual site (see report/top_25_opportunities.md and
-      # .superpowers/sdd/task-9-report.md for the curation log). Explicit
+      # Task 9 populated this with each top-ranked domain's category,
+      # checked against its actual site -- see report/top_25_opportunities.md
+      # for the result and report/actions.csv for the per-domain action
+      # that came out of the same site-verification pass. Explicit
       # column_types kept even though the file has data rows now, in case a
       # future curation pass ever leaves it back at header-only -- dbt has
       # nothing to infer types from on a zero-row CSV.

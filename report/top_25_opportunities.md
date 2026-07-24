@@ -20,34 +20,34 @@ We compared who links to Sigma, Hex, Mode, and Lightdash against who links to Om
 | 7 | sbookscan.com | Sigma, Hex, Mode, Lightdash | Yes | 0.988 | 0.997 | Large auto-aggregated 'submit your link' directory (~1M listed sites, not editorially curated); low outreach value -- at most a quick 'Add Your Link' submission, not worth prioritizing over the dev-tooling targets above. |
 | 9 | statussight.com | Sigma, Hex, Mode, Lightdash | Yes | 0.978 | 0.993 | Aggregates real-time status pages for 3,000+ SaaS tools (GitHub, Zoom, Notion, Figma, etc.); check whether they take submissions to track a new service and request Omni's status page be added. |
 | 11 | cyberdb.co | Sigma, Hex, Mode, Lightdash | Yes | 0.940 | 0.982 | Vendor database scoped to cybersecurity + 'enterprise AI' categories, not BI/analytics by name; lower-confidence fit -- if pursued, ask info@cyberdb.co whether an AI-driven analytics vendor fits their AI category before investing more time. |
-| 20 | greenhouse.io | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | ATS/job-board platform with customer case studies and a hosted jobs board; if Omni uses Greenhouse for hiring, verify the public job board links to omni.co -- a customer case study is a secondary long-shot if Omni becomes a Greenhouse customer. |
-| 22 | builtin.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | Hybrid jobs + company directory (500K+ jobs, 100K+ companies) with editorial tech content; claim/verify an Omni company profile -- the more likely link source than an editorial article. |
-| 25 | welcometothejungle.com | Sigma, Mode, Lightdash | Yes | 1.000 | 0.875 | Employer-branding/job-board platform; competitors' links likely come from their own employer profile and job listings -- if Omni is not already listed, create a profile and post open roles. |
+| 19 | greenhouse.io | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | ATS/job-board platform with customer case studies and a hosted jobs board; if Omni uses Greenhouse for hiring, verify the public job board links to omni.co -- a customer case study is a secondary long-shot if Omni becomes a Greenhouse customer. |
+| 21 | builtin.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | Hybrid jobs + company directory (500K+ jobs, 100K+ companies) with editorial tech content; claim/verify an Omni company profile -- the more likely link source than an editorial article. |
+| 24 | welcometothejungle.com | Sigma, Mode, Lightdash | Yes | 1.000 | 0.875 | Employer-branding/job-board platform; competitors' links likely come from their own employer profile and job listings -- if Omni is not already listed, create a profile and post open roles. |
 
 ## Dev-Tooling/Data-Content (12)
 
 | Rank | Domain | Links to | Present in both releases | Authority pct | Score | Suggested action |
 |---|---|---|---|---|---|---|
-| 5 | montecarlodata.com | Sigma, Hex, Mode, Lightdash | Yes | 1.000 | 1.000 | Same company/site as montecarlo.ai (this domain 301-redirects there) -- treat the two as one outreach target, not two. Their site already lists BI-tool integrations; pitch Omni for the same page. |
+| 5 | montecarlo.ai | Sigma, Hex, Mode, Lightdash | Yes | 1.000 | 1.000 | Pitch inclusion in their data/AI observability partner or integrations content. Also linked via montecarlodata.com. |
 | 6 | castordoc.com | Sigma, Hex, Mode, Lightdash | Yes | 1.000 | 1.000 | Product now branded 'Catalog' by Coalesce (rebranded after CastorDoc was acquired); their integrations page already lists Tableau/Power BI -- pitch Omni for the same page, addressed to the Coalesce/Catalog team, not the legacy CastorDoc name. |
 | 8 | getcollate.io | Sigma, Hex, Mode, Lightdash | Yes | 0.981 | 0.994 | Collate (built on OpenMetadata) is a data-catalog + AI platform; pitch inclusion in their supported-integrations content or a technical guest post on data discovery. |
 | 10 | getdbt.tech | Sigma, Hex, Mode, Lightdash | Yes | 0.977 | 0.993 | Domain does not resolve (DNS zone exists, no A record -- registered but not live); category is a naming-pattern guess only. Do not pitch content sight-unseen -- confirm by hand whether a live site exists first. |
 | 12 | blazesql.com | Sigma, Hex, Mode, Lightdash | Yes | 0.936 | 0.981 | AI SQL/data-analyst chatbot tool; pitch a technical comparison or integration guide covering BlazeSQL alongside a governed BI layer like Omni. |
 | 13 | cotera.co | Sigma, Hex, Mode, Lightdash | Yes | 0.931 | 0.979 | AI agents platform connected to the data warehouse/CRM; pitch a technical integration guide showing their agents acting on data modeled and served through Omni. |
-| 14 | montecarlo.ai | Sigma, Hex, Mode, Lightdash | Yes | 0.916 | 0.975 | Same company/site as montecarlodata.com (that domain redirects here) -- treat the two as one outreach target, not two. Pitch inclusion in their data/AI observability partner or integrations content. |
-| 15 | plushcap.com | Sigma, Hex, Mode, Lightdash | Yes | 0.913 | 0.974 | Developer-marketing intelligence platform that already tracks 536 dev-tool companies across 73 market categories; ask to be added as a tracked company -- also worth evaluating as a competitive-intel tool for Omni's own growth team. |
-| 17 | padiso.co | Sigma, Hex, Mode, Lightdash | Yes | 0.880 | 0.964 | Fractional-CTO consulting firm whose blog already covers BI tooling (published a 'Superset vs Tableau' piece and semantic-layer content); pitch Omni for their next BI/semantic-layer comparison post. |
-| 21 | coda.io | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | All-in-one workspace with 600+ integrations and an explicit competitor-comparison content pattern (Notion/Confluence/Airtable); pitch a Coda integration or template featuring embedded Omni dashboards. |
-| 23 | hightouch.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | Composable CDP with a 300+ tool integrations directory and 'Compare CDPs' content; pursue a listed integration or contribute to their comparison content. |
-| 24 | fivetran.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | ELT platform with a public connectors directory (900+ sources/destinations) and partner directory (partners.fivetran.com); pursue a technology/partner listing or destination connector. |
+| 14 | plushcap.com | Sigma, Hex, Mode, Lightdash | Yes | 0.913 | 0.974 | Developer-marketing intelligence platform that already tracks 536 dev-tool companies across 73 market categories; ask to be added as a tracked company -- also worth evaluating as a competitive-intel tool for Omni's own growth team. |
+| 16 | padiso.co | Sigma, Hex, Mode, Lightdash | Yes | 0.880 | 0.964 | Fractional-CTO consulting firm whose blog already covers BI tooling (published a 'Superset vs Tableau' piece and semantic-layer content); pitch Omni for their next BI/semantic-layer comparison post. |
+| 20 | coda.io | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | All-in-one workspace with 600+ integrations and an explicit competitor-comparison content pattern (Notion/Confluence/Airtable); pitch a Coda integration or template featuring embedded Omni dashboards. |
+| 22 | hightouch.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | Composable CDP with a 300+ tool integrations directory and 'Compare CDPs' content; pursue a listed integration or contribute to their comparison content. |
+| 23 | fivetran.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | ELT platform with a public connectors directory (900+ sources/destinations) and partner directory (partners.fivetran.com); pursue a technology/partner listing or destination connector. |
+| 25 | rudderstack.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | Customer Data Platform (CDP) with a public integrations library (200+ pre-built integrations, 'Explore the integration library'); pursue a listed integration, the same play already pitched to Hightouch and Fivetran above. |
 
 ## Other (3)
 
 | Rank | Domain | Links to | Present in both releases | Authority pct | Score | Suggested action |
 |---|---|---|---|---|---|---|
-| 16 | backlinks.sbs | Sigma, Hex, Mode, Lightdash | Yes | 0.895 | 0.968 | Domain does not resolve (no DNS delegation) and the name pattern is consistent with a link-scheme site; recommend excluding from outreach entirely rather than investigating further. |
-| 18 | google.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | No single addressable owner; the domain-level graph can't say which Google-hosted property (Workspace Marketplace, Groups, Sites, Cloud partner page, etc.) carries the link -- not a targeted outreach opportunity from this data alone. |
-| 19 | blogspot.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | Aggregates many independent Blogger-hosted personal blogs; domain-level data can't identify which post links out, and Blogger isn't a channel Omni would maintain a presence on -- no actionable pitch from this data alone. |
+| 15 | backlinks.sbs | Sigma, Hex, Mode, Lightdash | Yes | 0.895 | 0.968 | Domain does not resolve (no DNS delegation) and the name pattern is consistent with a link-scheme site; recommend excluding from outreach entirely rather than investigating further. |
+| 17 | google.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | No single addressable owner; the domain-level graph can't say which Google-hosted property (Workspace Marketplace, Groups, Sites, Cloud partner page, etc.) carries the link -- not a targeted outreach opportunity from this data alone. |
+| 18 | blogspot.com | Sigma, Hex, Mode | Yes | 1.000 | 0.875 | Aggregates many independent Blogger-hosted personal blogs; domain-level data can't identify which post links out, and Blogger isn't a channel Omni would maintain a presence on -- no actionable pitch from this data alone. |
 
 ## How to read authority
 
@@ -58,7 +58,7 @@ Authority pct is each domain's harmonic-centrality rank in Common Crawl's domain
 - Common Crawl covers a large but incomplete sample of the web; absence of a link here is not proof it does not exist.
 - Domain-level edges only: we know a domain links to hex.tech, not which page or anchor text -- the category and suggested action below come from that domain's homepage, not necessarily the specific page carrying the link.
 - "Present in both releases" is a soft persistence signal, not confirmation from two independent months: the two releases share two of their three underlying monthly crawls.
-- montecarlodata.com and montecarlo.ai are the same company (the former redirects to the latter) and both appear below; treat them as one outreach target, not two.
+- montecarlodata.com and montecarlo.ai are the same company (the former redirects to the latter): they are merged into the single montecarlo.ai row below (see report/duplicates.csv) rather than counted as two separate opportunities, so the 25 rows below are 25 distinct companies, not 25 domain strings.
 - Two domains below (getdbt.tech, backlinks.sbs) did not resolve when checked by hand; their categories and actions are best-guess (from the domain name and DNS records only), not confirmed from a live site.
 
-277 candidate domains met the filter (link to at least two of Sigma, Hex, Mode, and Lightdash, not to omni.co); the 25 highest-ranked are shown above.
+277 candidate domains met the filter (link to at least two of Sigma, Hex, Mode, and Lightdash, not to omni.co); the 25 highest-ranked distinct companies are shown above (one same-company duplicate among them was merged into a single row -- see the caveats above).

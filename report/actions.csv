@@ -3,7 +3,6 @@ github.com,"Competitors are linked via popular repos/orgs/READMEs; ensure Omni's
 github.io,"GitHub Pages' shared domain (many independent project/user sites, not one org); make sure any Omni docs, demos, or examples hosted on GitHub Pages link back to omni.co -- there is no single site to pitch here."
 ycombinator.com,"Aggregates ycombinator.com and news.ycombinator.com (Hacker News); links likely come from HN discussion threads and/or the YC company directory -- engage authentically in relevant threads (e.g. Show HN, data-tooling posts) rather than pitching a single contact."
 webcatalog.io,"App catalog of 50,000+ web apps with a public 'Submit an app' flow; submit Omni so it is listed alongside Sigma/Hex/Mode/Lightdash."
-montecarlodata.com,"Same company/site as montecarlo.ai (this domain 301-redirects there) -- treat the two as one outreach target, not two. Their site already lists BI-tool integrations; pitch Omni for the same page."
 castordoc.com,"Product now branded 'Catalog' by Coalesce (rebranded after CastorDoc was acquired); their integrations page already lists Tableau/Power BI -- pitch Omni for the same page, addressed to the Coalesce/Catalog team, not the legacy CastorDoc name."
 sbookscan.com,"Large auto-aggregated 'submit your link' directory (~1M listed sites, not editorially curated); low outreach value -- at most a quick 'Add Your Link' submission, not worth prioritizing over the dev-tooling targets above."
 getcollate.io,Collate (built on OpenMetadata) is a data-catalog + AI platform; pitch inclusion in their supported-integrations content or a technical guest post on data discovery.
@@ -12,7 +11,7 @@ getdbt.tech,"Domain does not resolve (DNS zone exists, no A record -- registered
 cyberdb.co,"Vendor database scoped to cybersecurity + 'enterprise AI' categories, not BI/analytics by name; lower-confidence fit -- if pursued, ask info@cyberdb.co whether an AI-driven analytics vendor fits their AI category before investing more time."
 blazesql.com,AI SQL/data-analyst chatbot tool; pitch a technical comparison or integration guide covering BlazeSQL alongside a governed BI layer like Omni.
 cotera.co,AI agents platform connected to the data warehouse/CRM; pitch a technical integration guide showing their agents acting on data modeled and served through Omni.
-montecarlo.ai,"Same company/site as montecarlodata.com (that domain redirects here) -- treat the two as one outreach target, not two. Pitch inclusion in their data/AI observability partner or integrations content."
+montecarlo.ai,Pitch inclusion in their data/AI observability partner or integrations content.
 plushcap.com,Developer-marketing intelligence platform that already tracks 536 dev-tool companies across 73 market categories; ask to be added as a tracked company -- also worth evaluating as a competitive-intel tool for Omni's own growth team.
 backlinks.sbs,Domain does not resolve (no DNS delegation) and the name pattern is consistent with a link-scheme site; recommend excluding from outreach entirely rather than investigating further.
 padiso.co,Fractional-CTO consulting firm whose blog already covers BI tooling (published a 'Superset vs Tableau' piece and semantic-layer content); pitch Omni for their next BI/semantic-layer comparison post.
@@ -24,3 +23,4 @@ builtin.com,"Hybrid jobs + company directory (500K+ jobs, 100K+ companies) with 
 hightouch.com,Composable CDP with a 300+ tool integrations directory and 'Compare CDPs' content; pursue a listed integration or contribute to their comparison content.
 fivetran.com,ELT platform with a public connectors directory (900+ sources/destinations) and partner directory (partners.fivetran.com); pursue a technology/partner listing or destination connector.
 welcometothejungle.com,"Employer-branding/job-board platform; competitors' links likely come from their own employer profile and job listings -- if Omni is not already listed, create a profile and post open roles."
+rudderstack.com,"Customer Data Platform (CDP) with a public integrations library (200+ pre-built integrations, 'Explore the integration library'); pursue a listed integration, the same play already pitched to Hightouch and Fivetran above."
