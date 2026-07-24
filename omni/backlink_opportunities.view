@@ -1,27 +1,26 @@
 # omni/backlink_opportunities.view
 #
 # Mock Omni view file (not connected to a live Omni instance) over the dbt
-# mart `mart_backlink_opportunities`. Syntax verified against fetched docs:
-#   https://docs.omni.co/modeling/views/index.md              (view file basics)
-#   https://docs.omni.co/modeling/views/parameters/index.md   (full parameter list)
-#   https://docs.omni.co/modeling/views/parameters/name.md    (name is implicit in
+# mart `mart_backlink_opportunities`. Syntax verified against fetched docs
+# (round 1 + rework round 1 -- see task-10-report.md for the full list):
+#   https://docs.omni.co/modeling/views/parameters/index.md       (full parameter list)
+#   https://docs.omni.co/modeling/views/parameters/name.md        (name is implicit in
 #     the file name and "cannot be explicitly set in the file" -- so there is no
 #     `name:` key below; this file is referenced as `backlink_opportunities`)
 #   https://docs.omni.co/modeling/views/parameters/schema.md      (schema is required)
 #   https://docs.omni.co/modeling/views/parameters/table-name.md
-#   https://docs.omni.co/modeling/dimensions/index.md
-#   https://docs.omni.co/modeling/dimensions/parameters/sql.md
-#   https://docs.omni.co/modeling/dimensions/parameters/description.md
-#   https://docs.omni.co/modeling/dimensions/parameters/primary-key.md
-#   https://docs.omni.co/modeling/measures/index.md
-#   https://docs.omni.co/modeling/measures/parameters/aggregate-type.md
-#   https://docs.omni.co/modeling/measures/parameters/sql.md
+#   https://docs.omni.co/modeling/dimensions/parameters/index.md  (full dimension parameter list)
+#   https://docs.omni.co/modeling/measures/parameters/index.md    (full measure parameter list)
+#   https://docs.omni.co/modeling/dimensions/parameters/{sql,description,label,primary-key,group-label,synonyms,format}.md
+#   https://docs.omni.co/modeling/measures/parameters/{aggregate-type,sql,description,label,format}.md
+#   https://docs.omni.co/modeling/models/format-values.md         (named format list: percent_1, number_2, ...)
+#   https://docs.omni.co/modeling/develop/ai-optimization.md      (worked example titled
+#     `products.view`, a third independent confirmation of the bare `.view` extension --
+#     see task-10-report.md "Rework round 1" for the full extension survey)
 #
-# File extension: bare `.view`, not `.view.yaml`. The `name` parameter doc's
-# own worked example names the file `ecomm__users.view`, and query views are
-# documented as `<name>.query.view` -- no `.yaml` suffix appears in either
-# real example, so the brief's draft filename is corrected here (see
-# task-10-report.md for the full extension survey).
+# File extension: bare `.view`, not `.view.yaml`. Kept from round 1 -- the docs give
+# three independent, literal "named foo.view"-style examples (see above), so this
+# is evidence-backed, not a guess.
 #
 # Dimension SQL uses quoted identifiers (`sql: '"col"'`), matching the
 # distribution_centers worked example in docs.omni.co/modeling/topics/setup.md
@@ -33,6 +32,18 @@
 # clause (dbt/models/marts/mart_backlink_opportunities.sql) already restricts
 # every row to links_omni = 0, so the column is constant here and would give
 # a marketer nothing to segment on.
+#
+# Reconciliation against OMNI_MODELING_CONTEXT.md's illustrative field list
+# (dbt mart is the contract -- see task-10-report.md "Rework round 1" for detail):
+#   - links_to_sigma/hex/mode/lightdash -> links_sigma/hex/mode/lightdash. The
+#     mart has no `links_to_*` columns; kept the real column names as dimension
+#     keys and used `label:` ("Links to Sigma", etc.) to supply the friendlier
+#     phrasing instead of renaming the field.
+#   - present_in_both_crawls -> present_in_both. Same pattern: real column name
+#     as the key, a `label:` of "Present in Both Releases" for readability.
+#   - crawl_release -> dropped; no such column exists anywhere in the mart.
+#     releases_seen (count) and present_in_both (flag) are the real columns
+#     that carry this signal and are modeled below instead.
 
 schema: main
 table_name: mart_backlink_opportunities
@@ -41,47 +52,73 @@ dimensions:
   source_domain:
     sql: '"source_domain"'
     primary_key: true
+    label: Referring Domain
     description: Referring domain that links to competitors but not to omni.co. One row per domain.
+    synonyms: [referring domain, linking site]
   category:
     sql: '"category"'
+    label: Outreach Category
     description: Outreach category for this domain -- listicle/review, community/education, dev-tooling/data-content, news/media, directory, or other.
+    synonyms: [outreach category, content type]
   links_sigma:
     sql: '"links_sigma"'
+    label: Links to Sigma
+    group_label: Competitor Links
     description: 1 if this domain links to sigmacomputing.com, else 0.
   links_hex:
     sql: '"links_hex"'
+    label: Links to Hex
+    group_label: Competitor Links
     description: 1 if this domain links to hex.tech, else 0.
   links_mode:
     sql: '"links_mode"'
+    label: Links to Mode
+    group_label: Competitor Links
     description: 1 if this domain links to mode.com, else 0.
   links_lightdash:
     sql: '"links_lightdash"'
+    label: Links to Lightdash
+    group_label: Competitor Links
     description: 1 if this domain links to lightdash.com, else 0.
   competitor_count:
     sql: '"competitor_count"'
+    label: Competitor Count
     description: How many of the four tracked competitors (Sigma, Hex, Mode, Lightdash) this domain links to. 2-4 in practice, since the mart already excludes domains linking to fewer than 2.
+    synonyms: [competitor coverage, number of competitors]
   present_in_both:
     sql: '"present_in_both"'
+    label: Present in Both Releases
     description: 1 if this domain's competitor link showed up in both the May and June 2026 Common Crawl releases, signaling a persistent rather than one-off link.
   releases_seen:
     sql: '"releases_seen"'
+    label: Releases Seen
     description: Number of monthly Common Crawl releases (of 2 tracked) in which this domain was seen linking to a competitor. The raw count behind present_in_both.
   authority_percentile:
     sql: '"authority_percentile"'
-    description: Percentile rank (0-1) of this domain's harmonic-centrality score in the Common Crawl web graph -- a proxy for how well-connected the site is. This is NOT Moz or Ahrefs Domain Authority; do not present it to stakeholders as DA.
+    label: Authority Percentile
+    format: percent_1
+    description: Percentile rank of this domain's harmonic-centrality score in the Common Crawl web graph -- a proxy for how well-connected the site is. This is NOT Moz or Ahrefs Domain Authority; do not present it to stakeholders as DA.
   opportunity_score:
     sql: '"opportunity_score"'
+    label: Opportunity Score
+    format: number_2
     description: Weighted blend of competitor gap breadth, authority percentile, and cross-release persistence. Higher means a better outreach target. See dbt/models/marts/mart_backlink_opportunities.sql for the exact weight formula.
+    synonyms: [priority score, ranking score]
 
 measures:
   opportunity_count:
     aggregate_type: count
+    label: Opportunity Count
     description: Number of qualifying backlink opportunity domains in the current selection.
   avg_opportunity_score:
     sql: ${opportunity_score}
     aggregate_type: average
+    format: number_2
+    label: Avg Opportunity Score
     description: Average opportunity score across the selected domains.
   avg_competitor_coverage:
     sql: ${competitor_count}
     aggregate_type: average
+    format: number_1
+    label: Avg Competitor Coverage
     description: Average number of tracked competitors (out of 4) the selected domains link to.

@@ -1,0 +1,100 @@
+# omni/backlink_opportunities.topic.yaml
+#
+# Mock Omni topic file (not connected to a live Omni instance): the default
+# Growth Marketing lens over the backlink_opportunities view. Syntax verified
+# against fetched docs (round 1 + rework round 1 -- see task-10-report.md):
+#   https://docs.omni.co/modeling/topics/parameters/index.md       (full parameter list)
+#   https://docs.omni.co/modeling/topics/parameters/base-view.md   (required)
+#   https://docs.omni.co/modeling/topics/parameters/label.md
+#   https://docs.omni.co/modeling/topics/parameters/description.md
+#   https://docs.omni.co/modeling/topics/parameters/default-filters.md
+#   https://docs.omni.co/modeling/topics/parameters/sample-queries.md
+#   https://docs.omni.co/modeling/topics/parameters/ai-context.md
+#   https://docs.omni.co/modeling/topics/best-practices.md
+#   https://docs.omni.co/modeling/develop/ai-optimization.md
+#   https://docs.omni.co/modeling/filters/index.md and .../operators/greater-than-or-equal-to.md
+#   https://docs.omni.co/modeling/models/topics.md                 (deprecation, see below)
+#
+# Topics used to be embeddable as a `topics:` list inside a model file. As of
+# 2024-12-10 that is deprecated: model files with an embedded `topics:` key
+# now error on save (docs.omni.co/modeling/models/topics.md). This mock uses
+# a standalone topic file, the only currently-valid form.
+#
+# File extension: `.topic.yaml`, matching OMNI_MODELING_CONTEXT.md's own
+# naming. Round 1 of this task used a bare `.topic` extension by analogy with
+# the docs' *view*-file convention -- but unlike views (three independent,
+# literal "named foo.view" docs examples, cited in backlink_opportunities.view),
+# no fetched docs page anywhere gives an equivalent literal filename example
+# for a topic file. topics/setup.md walks through creating one in the IDE
+# ("You'll be prompted to enter a name for the topic") without ever showing
+# the resulting file's extension. Absent that evidence, this reverts to the
+# context doc's explicit `.topic.yaml` rather than keeping an unconfirmed
+# guess -- see task-10-report.md "Rework round 1" for the full writeup.
+#
+# There is no `default_sort` (or any `sort`) topic-level parameter -- checked
+# the full parameter list linked above. The closest documented mechanism for
+# a pre-built, sorted default view is `sample_queries`, which
+# docs.omni.co/modeling/topics/setup.md and .../topics/best-practices.md both
+# recommend as a way to give users an approachable starting point. So the
+# "sort by opportunity_score desc" default lens is expressed as a sample
+# query below, capped at 25 rows to match the report's own top-25 contract.
+
+base_view: backlink_opportunities
+label: Backlink Opportunities
+description: |
+  Referring domains that link to at least two of Sigma, Hex, Mode, or
+  Lightdash but not to omni.co, ranked by outreach opportunity score.
+  Built from Common Crawl's May and June 2026 web graph releases via
+  mart_backlink_opportunities.
+
+ai_context: |
+  This topic covers referring domains from Common Crawl's May and June 2026
+  web graph that link to at least two of our tracked competitors (Sigma, Hex,
+  Mode, Lightdash) but not to omni.co -- candidates for backlink outreach.
+  opportunity_score blends how many competitors a domain links to, its
+  authority_percentile (a web-graph centrality proxy, not Moz or Ahrefs
+  Domain Authority), and whether the link persisted across both releases;
+  higher is a better outreach target. Typical questions: which domains link
+  to our competitors but not to us, which are the highest-priority
+  opportunities, and how opportunities break down by outreach category.
+
+# Redundant with the mart's own WHERE clause today (every row already has
+# competitor_count >= 2), but kept as an explicit, visible-and-removable
+# default per the brief: it documents intent in the semantic layer itself
+# and keeps the topic correct if the mart's threshold is ever loosened.
+default_filters:
+  backlink_opportunities.competitor_count:
+    greater_than_or_equal_to: 2
+
+sample_queries:
+  Top 25 Opportunities:
+    query:
+      fields: [
+        backlink_opportunities.source_domain,
+        backlink_opportunities.category,
+        backlink_opportunities.competitor_count,
+        backlink_opportunities.authority_percentile,
+        backlink_opportunities.opportunity_score
+      ]
+      base_view: backlink_opportunities
+      sorts:
+        - field: backlink_opportunities.opportunity_score
+          desc: true
+      limit: 25
+      topic: backlink_opportunities
+    description: The default Growth Marketing lens -- qualifying domains ranked by opportunity score, highest first, matching the top-25 outreach report.
+    prompt: Show me our best backlink opportunities to pursue
+  Opportunities by Category:
+    query:
+      fields: [
+        backlink_opportunities.category,
+        backlink_opportunities.opportunity_count,
+        backlink_opportunities.avg_opportunity_score
+      ]
+      base_view: backlink_opportunities
+      sorts:
+        - field: backlink_opportunities.avg_opportunity_score
+          desc: true
+      topic: backlink_opportunities
+    description: Opportunity volume and average score grouped by outreach category, mirroring how the top-25 report itself is organized.
+    prompt: Break down our backlink opportunities by category
